@@ -1,0 +1,84 @@
+{% extends "base.html" %} {% block title %}Home{% endblock %} {% block content
+%}
+<br>
+<h1 align="center">Your Fridge</h1>
+<br>
+<p align="center">this is some information about entering information into the Fridge</p>
+<br>
+<head>
+      
+  <!-- CSS style to set alternate table 
+          row using color -->
+  <style>
+      table {
+          border-collapse: collapse;
+          width: 100%;
+      }
+
+      th{
+        color: azure; 
+        background-color: rgb(65, 114, 114);
+      }
+        
+      th, td {
+          text-align: left;
+          padding: 8px;
+      }
+        
+      tr:nth-child(odd) {
+          background-color: rgb(226, 226, 226);
+      }
+  </style>
+</head>
+
+<table >
+  <tr style="color: azure; background-color: rgb(65, 114, 114);">
+    <th>Ingredient</th>
+    <th>Quantiy</th>
+    <th>Unit</th>
+  </tr>
+  {% for note in user.notes %}
+  <tr>
+    <td>{{note.item}}</td>
+    <td>{{note.quantity}}</td>
+    <td>
+      {{note.unit}}
+      <button type="button" class="close" onClick="deleteNote({{ note.id }})">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+<br>
+<br>
+</ul>
+<form method="POST">
+  <p>Item</p>
+  <textarea name="item" id="item" class="form-control"></textarea>
+  
+  <p>Quantity</p>
+  <textarea name="quan" id="quan" class="form-control"></textarea>
+
+  <p>Unit</p>
+  <select name="unit" id="unit" class="form-control">
+    <option value="lbs">Pounds</option>
+    <option value="oz">Ounces</option>
+    <option value="cups">Cups</option>
+    <option value="g">Grams</option>
+    <option value="kg">Kilograms</option>
+    <option value="L">Liters</option>
+    <option value="mL">Milliliters</option>
+    <option value="Units">Units</option>
+    <option value="NA">No limit</option>
+
+  </select>
+
+
+  <br />
+  <div align="center">
+    <button type="submit" class="btn btn-primary">Add Ingredient</button>
+  </div>
+</form>
+{% endblock %}
