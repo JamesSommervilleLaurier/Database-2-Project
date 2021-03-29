@@ -39,8 +39,8 @@ class Ingredient_listing:
         print("Ingredient:",self.name,"\tQuantity:",self.quantity,"\tUnit:",self.unit,"\tPreparation:",self.prep,"\tGeneral Ingredient:",self.general)
 
 
-
-for i in range(10001,10010):
+# id range change
+for i in range(10001,10030):
     scrape_URL = "https://www.allrecipes.com/recipe/"+ str(i)+"/"
     
     try:
@@ -62,49 +62,50 @@ for i in range(10001,10010):
     ingredient_list = []
 
     measurements = html_soup.find_all("input",class_="checkbox-list-input")
-    for measurement in measurements:
-        mtup = [measurement.get("data-ingredient"),measurement.get("data-init-quantity"),measurement.get("data-unit")]
-        if mtup[0] != None:
-
-            ingredient_list.append(mtup)
+    # Recipe with less than 9 ingredients
+    if len(measurements) <= 8:
+        for measurement in measurements:
+            mtup = [measurement.get("data-ingredient"),measurement.get("data-init-quantity"),measurement.get("data-unit")]
+            if mtup[0] != None:
+                ingredient_list.append(mtup)
             
 
-    directions = html_soup.find("ul",class_="instructions-section")
-    instructions = directions.find_all("p")
+        directions = html_soup.find("ul",class_="instructions-section")
+        instructions = directions.find_all("p")
 
-    # Gather the Direction Information
-    count = 1
-    directions_arr =[]
-    for direction in instructions:
-        directions_arr.append("Step"+str(count)+": "+direction.get_text())
-        count+=1
+        # Gather the Direction Information
+        count = 1
+        directions_arr =[]
+        for direction in instructions:
+            directions_arr.append("Step"+str(count)+": "+direction.get_text())
+            count+=1
 
-    # Gather the Ingredient Information 
-    Ingredients_arr = []
-    for ingredient in ingredient_list:
+        # Gather the Ingredient Information 
+        Ingredients_arr = []
+        for ingredient in ingredient_list:
 
-        a= ingredient[0].split(",")
+            a= ingredient[0].split(",")
 
-        if ingredient[0] in general_items:
-            general = "T"
-        else:
-            general = "F"
+            if ingredient[0] in general_items:
+                general = "T"
+            else:
+                general = "F"
+            
+            if len(a)>1:
+                ing = Ingredient_listing(a[0],ingredient[1],ingredient[2],a[1],general)
+            else:
+                ing = Ingredient_listing(a[0],ingredient[1],ingredient[2],"None",general)
+
+            Ingredients_arr.append(ing)
         
-        if len(a)>1:
-            ing = Ingredient_listing(a[0],ingredient[1],ingredient[2],a[1],general)
-        else:
-            ing = Ingredient_listing(a[0],ingredient[1],ingredient[2],"None",general)
+        # create recipe object    
 
-        Ingredients_arr.append(ing)
-    
-    # create recipe object    
-
-    recipe_object = Recipe(i,recipe_name,review_num,Ingredients_arr,directions_arr)
+        recipe_object = Recipe(i,recipe_name,review_num,Ingredients_arr,directions_arr)
 
 
-    #display
-    recipe_object.display()
-    print("")
+        #display
+        recipe_object.display()
+        print("")
 
 
 import mysql.connector
