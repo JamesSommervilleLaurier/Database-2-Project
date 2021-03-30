@@ -19,6 +19,7 @@ def create_app():
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
 
+    # Database setup starts here
     from .models import User, Note
 
     create_database(app)
@@ -35,6 +36,7 @@ def create_app():
 
 
 def create_database(app):
+    #i believe we should make the connection to the database here
     if not path.exists('website/' + DB_NAME):
         db.create_all(app=app)
         print('Created Database!')
