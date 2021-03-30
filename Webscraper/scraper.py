@@ -89,21 +89,21 @@ for i in recipes:
             ingredient_list.append(mtup)
             
 
-    directions = html_soup.find("ul",class_="instructions-section")
-    instructions = directions.find_all("p")
+        directions = html_soup.find("ul",class_="instructions-section")
+        instructions = directions.find_all("p")
 
-    # Gather the Direction Information
-    count = 1
-    directions_arr =[]
-    for direction in instructions:
-        directions_arr.append("Step"+str(count)+": "+direction.get_text())
-        count+=1
+        # Gather the Direction Information
+        count = 1
+        directions_arr =[]
+        for direction in instructions:
+            directions_arr.append("Step"+str(count)+": "+direction.get_text())
+            count+=1
 
-    # Gather the Ingredient Information 
-    Ingredients_arr = []
-    for ingredient in ingredient_list:
+        # Gather the Ingredient Information 
+        Ingredients_arr = []
+        for ingredient in ingredient_list:
 
-        a= ingredient[0].split(",")
+            a= ingredient[0].split(",")
 
         term = ""
         teststr = a[0]
@@ -133,11 +133,11 @@ for i in recipes:
             else:
                 ing = Ingredient_listing(a[0],ingredient[1],ingredient[2],"None",general)
 
-        Ingredients_arr.append(ing)
-    
-    # create recipe object    
+            Ingredients_arr.append(ing)
+        
+        # create recipe object    
 
-    recipe_object = Recipe(i,recipe_name,review_num,Ingredients_arr,directions_arr)
+        recipe_object = Recipe(i,recipe_name,review_num,Ingredients_arr,directions_arr)
 
 
     #display
