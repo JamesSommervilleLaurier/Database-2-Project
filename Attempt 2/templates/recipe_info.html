@@ -1,0 +1,42 @@
+{% extends "base.html" %} {% block title %}Recipe Drill Down{% endblock %} {% block content
+%}
+
+<head>
+    <style>
+        .sh {
+            border-radius: 25px;
+            border: 5px solid  rgb(65, 114, 114);
+            padding: 20px;
+            background-color: lightblue;
+            text-align: left;
+            font-size: larger
+            }
+
+        
+    </style>
+  </head>
+
+<br>
+<h1 align="center">{{recipe_name}}</h1>
+<h5 align="center"> Rating:{{recipe_rating}}/5 </h5>
+<br>
+
+<br>
+<h1 align="left" class = "sh" >Ingredients</h1>
+
+{%for ingredient in ingredients%}
+<p>{{ingredient[3]}} {{ingredient[4]}} {{ingredient[2]}}</p>
+
+{%endfor%}
+
+<br>
+<h1 align="left" class = "sh">Directions</h1>
+
+{%for direction in directions%}
+<p>{{direction}}</p>
+
+{%endfor%}
+
+{% endblock %}
+
+

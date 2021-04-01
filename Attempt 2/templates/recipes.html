@@ -1,0 +1,57 @@
+{% extends "base.html" %} {% block title %}Recipes{% endblock %} {% block content
+%}
+
+<br>
+<h1 align="center">Your Recipes</h1>
+<br>
+<p align="center">Recipes are arranged with best fit for your fridge at the top </p>
+<br>
+
+
+<head>
+    <style>
+        .myDiv {
+            border-radius: 25px;
+            border: 5px solid  rgb(65, 114, 114);
+            padding: 20px;
+            background-color: lightblue;
+            text-align: left;
+            }
+
+        .foodtitle{
+            font-size:x-large;
+        }
+
+        .seemore{
+            border-radius: 25px;
+            border: 2px solid  rgb(65, 114, 114);
+            background-color: rgb(204, 226, 233);
+            text-align: center;
+        }
+    </style>
+  </head>
+  
+  <table >
+    {% for recipe in recipes %}
+    
+    <div class="myDiv">
+        
+        <h2 class = "foodtitle">{{recipe[1]}}</h2>
+        
+        <p>Rating:{{recipe[2]}}/5</p>
+
+        <button type="button" class ="seemore" onClick="getRecipeInfo({{recipe[0]}})">
+            <span aria-hidden="true" > See more &RightTriangle;</span>
+        </button>
+
+        
+    </div>
+       
+    <br>
+      
+    {% endfor %}
+  </table>
+
+
+
+{% endblock %}
