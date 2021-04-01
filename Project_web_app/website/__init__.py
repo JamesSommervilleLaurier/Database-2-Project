@@ -1,17 +1,43 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from os import path
 from flask_login import LoginManager
+from flask_mysqldb import MySQL 
+import re
+from os import path
+import mysql.connector
 
-db = SQLAlchemy()
-DB_NAME = "database.db"
+
+def connect_db():
+    # global code to connect to the database
+
+    try:
+        mydb = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="db2g1234",
+        database="database2project"
+        )
+        mycursor = mydb.cursor(buffered=True)
+        print('Database Connection Established!')
+
+    except:
+        print('Database Connection Failed!')
+
+    return mydb,mycursor
 
 
 def create_app():
     app = Flask(__name__)
+
     app.config['SECRET_KEY'] = 'hjshjhdjah kjshkjdhjs'
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
-    db.init_app(app)
+
+    app.config['MYSQL_USER'] = 'root'
+    app.config['MYSQL_PASSWORD'] = 'db2g1234'
+    app.config['MYSQL_HOST'] = 'localhost'
+    app.config['MYSQL_DB'] = 'database2project'
+    app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+
+
+    mysql = MySQL(app)
 
     from .views import views
     from .auth import auth
@@ -19,10 +45,6 @@ def create_app():
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
 
-    # Database setup starts here
-    from .models import User, Note
-
-    create_database(app)
 
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'
@@ -30,13 +52,14 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(id):
-        return User.query.get(int(id))
+
+        select_user = """SELECT * FROM user WHERE user_id = %s"""
+        
+        mydb,mycursor = connect_db()
+        mycursor.execute(select_user, (id,))
+        user= mycursor.fetchone()
+
+        return user
 
     return app
 
-
-def create_database(app):
-    #i believe we should make the connection to the database here
-    if not path.exists('website/' + DB_NAME):
-        db.create_all(app=app)
-        print('Created Database!')
