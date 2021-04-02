@@ -84,7 +84,6 @@ def recipes():
     mycursor.execute('SELECT * FROM recipes LIMIT 20')
     recipes = mycursor.fetchall()
     
-    print(recipes)
 
     return render_template("recipes.html",recipes = recipes )
 
@@ -93,7 +92,6 @@ def recipes():
 def recipe_info():
     recipe_id = session["recipe_id"]
 
-    print (recipe_id)
 
     mycursor = mysql.connection.cursor()
     mycursor.execute('SELECT * FROM recipes WHERE recipe_id = %s ', ( recipe_id,))
@@ -104,24 +102,12 @@ def recipe_info():
 
     recipe_rating = recipe[2]
 
-    print("r3" ,recipe[3])
     if recipe[3]:
         directions = ast.literal_eval(recipe[3])
     else:
         directions = []
 
-    print(recipe[1])
-
-    for ing in recipe_ingredients:
-
-        print(ing[2])
-
-    for direction in directions:
-        print(direction)
-
-
-
-
+                 
     return render_template("recipe_info.html",recipe_name = recipe[1],recipe_rating = recipe_rating,ingredients = recipe_ingredients, directions = directions)
 
 

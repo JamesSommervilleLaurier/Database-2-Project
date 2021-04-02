@@ -7,15 +7,15 @@ import mysql.connector
 mydb = mysql.connector.connect(
   host="localhost",
   user="root",
-  password="",
+  password="db2g1234",
   database="database2project"
 )
 
 
 mycursor = mydb.cursor()
 
-general_items = ["water","salt","ground black pepper","ground black pepper to taste","salt and pepper to taste","vegetable oil","olive oil","white sugar","all-purpose flour","ice water","boiling water"]
-filler_terms = ["zesty","shredded","crushed","diced","chopped","prepared","freshly","fresh","ground","frozen","minced","uncooked","sliced","hard-boiled","grated"]
+general_items = ["water","salt","ground black pepper","ground black pepper to taste","salt and pepper to taste","vegetable oil","olive oil","white sugar","all-purpose flour","ice water","boiling water","salt and  black pepper ","salt and black pepper","black pepper"]
+filler_terms = ["thinly","zesty","shredded","crushed","diced","finely","chopped","prepared","freshly","fresh","ground","frozen","minced","uncooked","sliced","hard-boiled","grated","toasted","torn","crumbled","cold","processed","lean","large","mashed","to taste","- rinsed"]
 
 class Recipe:
     def __init__(self,recipe_id,recipe_name,recipe_review,ingredients_array,directions_array):
@@ -49,14 +49,16 @@ class Ingredient_listing:
     def display(self):
         print("I:",self.name,"Q:",self.quantity,"U:",self.unit,"P:",self.prep,"G:",self.general)
 
-recipes = [241001]
-#recipes = [10009,16000,13600,17500,18300,19700,19216,19296,19346,19620,19680,
-#19860,19920,11983,257918,233758,238691,279903,220323,14373,60037,228823,268249,
-#82347,233287,221261,257305,241473,278776,22831,83557,11679,24771,79543,278271,
-#163625,241001,283197,16895,244458,235449,54679,213109,9870,283664,47717,24239,32385,
-# 25473,24264]
-#for i in range(10003,90000,495):
-for i in recipes:
+#recipes = [241001]
+recipes = [10009,16000,13600,17500,18300,19700,19216,19296,19346,19620,19680,
+19920,11983,257918,233758,238691,279903,220323,14373,60037,228823,268249,
+82347,233287,221261,257305,241473,278776,22831,83557,11679,24771,79543,278271,
+163625,241001,16895,244458,235449,54679,213109,9870,47717,24239,32385,
+25473,24264,86587,23519,24212,23757,21551, 
+187850,262681,69471,255010,256007,244281,259098,21004,275944,32385,275548,240400,23891
+]
+for i in range(10009,90000,156):
+#for i in recipes:
     scrape_URL = "https://www.allrecipes.com/recipe/"+ str(i)+"/"
     
     try:
@@ -78,7 +80,7 @@ for i in recipes:
     review_num = str(float(review_num.strip(ascii_letters+":")))
 
     ingredient_list = []
-
+    
     measurements = html_soup.find_all("input",class_="checkbox-list-input")
     #if len(measurements) > 7:
         #continue
@@ -105,33 +107,37 @@ for i in recipes:
 
             a= ingredient[0].split(",")
 
-        term = ""
-        teststr = a[0]
-        for word in filler_terms:
-            temp = teststr
-            teststr = teststr.replace( word , '')
-            if temp != teststr :
-                term = word.strip()
-        
-        a[0]= teststr.lstrip().lower()
-        
+            term = ""
+            teststr = a[0]
+            for word in filler_terms:
+                temp = teststr
+                teststr = teststr.replace( word , '')
+                if temp != teststr :
 
-        if ingredient[0] in general_items:
-            general = "T"
-        else:
-            general = "F"
-        
-        if len(a)>1:
-            if term != "":
-                ing = Ingredient_listing(a[0],ingredient[1],ingredient[2],a[1]+","+term,general)
-            else:
-                ing = Ingredient_listing(a[0],ingredient[1],ingredient[2],a[1],general)
-        else:
+                    if term == "":
+                        term = term
+                    else:
+                        term = term+", "+word.strip()
+            
+            a[0]= teststr.lstrip().lower()
+            
 
-            if term != "":
-                ing = Ingredient_listing(a[0],ingredient[1],ingredient[2],term,general)
+            if a[0] in general_items:
+                general = "T"
             else:
-                ing = Ingredient_listing(a[0],ingredient[1],ingredient[2],"None",general)
+                general = "F"
+            
+            if len(a)>1:
+                if term != "":
+                    ing = Ingredient_listing(a[0],ingredient[1],ingredient[2],a[1]+","+term,general)
+                else:
+                    ing = Ingredient_listing(a[0],ingredient[1],ingredient[2],a[1],general)
+            else:
+
+                if term != "":
+                    ing = Ingredient_listing(a[0],ingredient[1],ingredient[2],term,general)
+                else:
+                    ing = Ingredient_listing(a[0],ingredient[1],ingredient[2],"",general)
 
             Ingredients_arr.append(ing)
         
