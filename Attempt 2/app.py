@@ -79,11 +79,58 @@ def delete_note():
 def recipes():
     # route to display tabulated basic recipe data  
     #recipes = [["recipe name" , "recipe basic info"],["recipe name 2" , "recipe basic info 2"]]
+ 
+
+    fridge = get_users_fridge(session['id'])
 
     mycursor = mysql.connection.cursor()
-    mycursor.execute('SELECT * FROM recipes LIMIT 20')
-    recipes = mycursor.fetchall()
+    mycursor.execute('SELECT recipe_id,recipe_rating FROM recipes ')
+    recipe_id_array = mycursor.fetchall()
+
+    RID_score = []
     
+
+    for recipe_id in recipe_id_array:
+        RID_score.append([recipe_id[0],recipe_id[1],0])
+
+    
+
+    for arr in RID_score:
+        score = 0
+        for ingredient in fridge:
+            
+            mycursor.execute('SELECT count(*) FROM recipe_ingredients WHERE recipe_id = %s AND ingredient_name = %s ', ( arr[0],ingredient[1],))
+            count = mycursor.fetchone()
+
+
+            mycursor.execute("SELECT count(*) FROM recipe_ingredients WHERE recipe_id = %s AND ingredient_name LIKE %s", ( arr[0],'%'+ingredient[1]+'%',))
+            count_pm = mycursor.fetchone()
+
+
+            partialmatchcount = count_pm[0] - count[0]
+
+
+
+            score += count[0] + (0.5* partialmatchcount)
+
+        arr[2] = arr[1]*score 
+
+
+    sorted_RIDs = sorted(RID_score, key=lambda x:x[2], reverse=True)
+
+    print(sorted_RIDs)
+
+    recipes = []
+    counter = 0 
+    for rid in sorted_RIDs:
+        if counter <= 10:
+            mycursor.execute('SELECT * FROM recipes WHERE recipe_id = %s ', ( rid[0],))
+            recipe = mycursor.fetchone()
+            counter += 1
+
+            recipes.append(recipe)
+
+    print(recipes)
 
     return render_template("recipes.html",recipes = recipes )
 
