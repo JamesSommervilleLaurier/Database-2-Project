@@ -55,15 +55,15 @@ def convert_unit(item_quantity,item_unit):
         ["(5 ounce) can",140],
         ["(15 ounce) can",420],
         ["(3.5 ounce) package",98],
-        ["(.25 ounce) package",7]
-        ["(4 ounce) cans",112]
-        ["(10.75 ounce) cans",301]
-        ["(5 ounce) jar",140]
-        ["(3 ounce) package",84]
-        ["(10.75 ounce) can",301]
-        ["(18 ounce) package",504]
-        ["(4 pound)",1,892]
-        ["(1 ounce) squares",28]
+        ["(.25 ounce) package",7],
+        ["(4 ounce) cans",112],
+        ["(10.75 ounce) cans",301],
+        ["(5 ounce) jar",140],
+        ["(3 ounce) package",84],
+        ["(10.75 ounce) can",301],
+        ["(18 ounce) package",504],
+        ["(4 pound)",1,892],
+        ["(1 ounce) squares",28],
         ["(3 ounce) packages",84]
     ]
 
@@ -86,6 +86,9 @@ def convert_unit(item_quantity,item_unit):
         ["L",1000]
     ]
 
+    if item_unit == "":
+        return item_quantity , "u"
+
     if item_unit in unquantifiable_units:
         return 0 , None
 
@@ -106,12 +109,6 @@ def convert_unit(item_quantity,item_unit):
     
     return 0 , None
     
-
-    
-    
-    
-
-
 
 # HOME ROUTE
 
@@ -177,35 +174,75 @@ def recipes():
     
 
     for recipe_id in recipe_id_array:
-        RID_score.append([recipe_id[0],recipe_id[1],0])
+        RID_score.append([recipe_id[0],recipe_id[1],0,0,0,0])
 
     
-
+    # for each recipe calculate a score
     for arr in RID_score:
+
         score = 0
+        unit_score = 0
+        fm_count = 0
+        partialmatchcount = 0
+
+        # for each ingredient in the users fridge 
         for ingredient in fridge:
-
             
-            mycursor.execute('SELECT count(*) FROM recipe_ingredients WHERE recipe_id = %s AND ingredient_name = %s ', ( arr[0],ingredient[1],))
-            count = mycursor.fetchone()
+            
+            mycursor.execute('SELECT count(*) FROM recipe_ingredients WHERE recipe_id = %s  ', ( arr[0],))
+            count_ing_arr = mycursor.fetchall()
+            num_ingredients = len(count_ing_arr)
+
+            #Quantity Match 
+            mycursor.execute('SELECT * FROM recipe_ingredients WHERE recipe_id = %s AND ingredient_name = %s ', ( arr[0],ingredient[1],))
+            r_ingredients_arr = mycursor.fetchall()
+
+            fm_count += len(r_ingredients_arr) #full match count
 
 
+            #is the ingredient in the recipe and is the ammount in the fridge greater than the recipe
+            for i in r_ingredients_arr:
+
+                #check if the quantity is a number
+                if is_number(i[3]) and is_number(ingredient[2]):
+                    quantity_r = float(i[3])
+                    quantity_f = float(ingredient[2])
+
+                    #standardize the quantities 
+                    std_quantity_r,std_unit_r = convert_unit(quantity_r,i[4])
+                    std_quantity_f,std_unit_f = convert_unit(quantity_f,ingredient[3])
+
+                    #compare quantities 
+                    if std_unit_r == std_unit_f:
+                        if std_quantity_f >= std_quantity_r:
+                            #if user has enough in the fridge then they get a point
+                            unit_score += 1
+
+                else:
+                    unit_score += 0
+                    
+
+            #Partial match
             mycursor.execute("SELECT count(*) FROM recipe_ingredients WHERE recipe_id = %s AND ingredient_name LIKE %s", ( arr[0],'%'+ingredient[1]+'%',))
-            count_pm = mycursor.fetchone()
+            pm_count = mycursor.fetchone()
 
 
-            partialmatchcount = count_pm[0] - count[0]
+            partialmatchcount += pm_count[0]
 
 
-            score += count[0] + (0.5* partialmatchcount)
+        partialmatchcount = partialmatchcount - fm_count  
+        
+        percentage_of_recipe = (fm_count+partialmatchcount)/num_ingredients  
 
-        arr[2] = arr[1]*0.5*score 
+        score = arr[1]*0.5*((2*unit_score) + fm_count + (0.5* partialmatchcount) + (percentage_of_recipe*10))
+        
+        arr[2] = score
 
-
+    # sort array by recipe with highest given score
     sorted_RIDs = sorted(RID_score, key=lambda x:x[2], reverse=True)
 
-    print(sorted_RIDs)
 
+    #generate a new array with the information to pass to the html
     recipes = []
     counter = 0 
     for rid in sorted_RIDs:
@@ -215,8 +252,6 @@ def recipes():
             counter += 1
 
             recipes.append(recipe)
-
-    print(recipes)
 
     return render_template("recipes.html",recipes = recipes )
 
