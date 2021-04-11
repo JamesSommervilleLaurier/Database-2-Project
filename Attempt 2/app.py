@@ -18,6 +18,12 @@ app.config['MYSQL_DB'] = 'database2project'
 
 mysql = MySQL(app)
 
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
 
 def get_users_fridge(user_id):
     
@@ -25,6 +31,86 @@ def get_users_fridge(user_id):
     mycursor.execute('SELECT * FROM fridge_contents WHERE user_id = %s ', ( user_id,))
     f_contents = mycursor.fetchall()
     return f_contents
+
+
+def convert_unit(item_quantity,item_unit):
+    #returns 0 for error quantities and for unquantifiable amounts 
+
+    unquantifiable_units = ["thin slices","slice","slices","dashes","dash","pinch","splash","large","thick slices","medium","small","drops","bunch","recipe","(9 inch)","(1/4 inch thick) ring","(6 inch)","medium heads"]
+    
+    unit_units = ["clove","cloves","ear","ears","head","heads","stalk","stalks","leafs","leaves","units"]
+
+    package_units = [
+        ["(6 ounce) package",168],
+        ["(8 ounce) package",224],
+        ["(8 ounce) box",224],
+        ["(6 ounce) can",168],
+        ["(3 pound)", 1419],
+        ["(16 ounce) package",448],
+        ["(7 ounce) can",196],
+        ["(16 ounce) container",448],
+        ["(10 ounce) can", 280],
+        ["(14 ounce) can",392],
+        ["(8 ounce) can",224],
+        ["(5 ounce) can",140],
+        ["(15 ounce) can",420],
+        ["(3.5 ounce) package",98],
+        ["(.25 ounce) package",7]
+        ["(4 ounce) cans",112]
+        ["(10.75 ounce) cans",301]
+        ["(5 ounce) jar",140]
+        ["(3 ounce) package",84]
+        ["(10.75 ounce) can",301]
+        ["(18 ounce) package",504]
+        ["(4 pound)",1,892]
+        ["(1 ounce) squares",28]
+        ["(3 ounce) packages",84]
+    ]
+
+    quantiffiable_units = [
+        ["cup",237],
+        ["cups",237],
+        ["tablespoon",18], 
+        ["tablespoons",18], 
+        ["pound",473],
+        ["pounds",473], 
+        ["teaspoon",5],
+        ["teaspoons",5],
+        ["ounces",28],
+        ["pint",473],
+        ["lbs",473],
+        ["oz",28],
+        ["g",1],
+        ["kg",1000],
+        ["mL",1],
+        ["L",1000]
+    ]
+
+    if item_unit in unquantifiable_units:
+        return 0 , None
+
+    if item_unit in unit_units:
+        return item_quantity , "u"
+
+    for unit in quantiffiable_units:
+        if unit[0] == item_unit:
+            if is_number(item_quantity):
+                qnum = float(item_quantity)
+                return item_quantity * unit[1] , "ml"
+
+    for unit in package_units:
+        if unit[0] == item_unit:
+            if is_number(item_quantity):
+                qnum = float(item_quantity)
+                return item_quantity * unit[1] , "ml"
+    
+    return 0 , None
+    
+
+    
+    
+    
+
 
 
 # HOME ROUTE
@@ -98,6 +184,7 @@ def recipes():
     for arr in RID_score:
         score = 0
         for ingredient in fridge:
+
             
             mycursor.execute('SELECT count(*) FROM recipe_ingredients WHERE recipe_id = %s AND ingredient_name = %s ', ( arr[0],ingredient[1],))
             count = mycursor.fetchone()
@@ -110,10 +197,9 @@ def recipes():
             partialmatchcount = count_pm[0] - count[0]
 
 
-
             score += count[0] + (0.5* partialmatchcount)
 
-        arr[2] = arr[1]*score 
+        arr[2] = arr[1]*0.5*score 
 
 
     sorted_RIDs = sorted(RID_score, key=lambda x:x[2], reverse=True)
